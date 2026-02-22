@@ -1,13 +1,19 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+body {
+  font-family: Arial;
+  background: #111;
+  color: white;
+  text-align: center;
 }
 
-html, body {
-  height: 100%;
-  width: 100%;
-  background-color: #000;
+.container {
+  margin-top: 100px;
+}
+
+button {
+  padding: 10px 20px;
+  margin: 10px;
+  background: red;
   color: white;
+  border: none;
+  cursor: pointer;
 }
