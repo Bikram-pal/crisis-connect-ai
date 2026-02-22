@@ -21,9 +21,17 @@
 <section class="bg-white p-6 rounded-xl shadow border">
 <h1 class="text-2xl font-bold mb-4">Report an Emergency</h1>
 
+<div class="relative">
 <textarea id="emergencyInput"
-class="w-full h-32 p-4 rounded-lg border text-lg resize-none"
+class="w-full h-32 p-4 rounded-lg border text-lg resize-none pr-14"
 placeholder="Describe your emergency situation..."></textarea>
+
+<button id="micBtn"
+type="button"
+class="absolute bottom-3 right-3 bg-gray-200 hover:bg-red-100 p-2 rounded-full transition">
+🎤
+</button>
+</div>
 
 <button id="detectBtn"
 class="w-full mt-4 py-4 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition">
