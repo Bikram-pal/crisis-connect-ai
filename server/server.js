@@ -11,10 +11,28 @@ app.use(cors());
 app.use(express.json());
 
 /* ==============================
+   Environment Variable Check
+================================ */
+if (!process.env.OPENROUTER_API_KEY) {
+    console.warn("⚠ OPENROUTER_API_KEY not set");
+}
+
+if (!process.env.GEOAPIFY_API_KEY) {
+    console.warn("⚠ GEOAPIFY_API_KEY not set");
+}
+
+/* ==============================
    Serve Frontend
 ================================ */
 const clientPath = path.join(__dirname, "..", "client");
 app.use(express.static(clientPath));
+
+/* ==============================
+   Health Check Route
+================================ */
+app.get("/health", (req, res) => {
+    res.json({ status: "Server is running" });
+});
 
 /* ==============================
    AI EMERGENCY ANALYSIS
@@ -56,7 +74,7 @@ No extra text.
             },
             {
                 headers: {
-                    "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+                    Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
                     "Content-Type": "application/json"
                 }
             }
@@ -79,7 +97,7 @@ No extra text.
         res.json(parsedResponse);
 
     } catch (error) {
-        console.error("OpenRouter Error:", error.response?.data || error.message);
+        console.error("❌ OpenRouter Error:", error.response?.data || error.message);
         res.status(500).json({ error: "AI analysis failed." });
     }
 });
@@ -118,13 +136,13 @@ app.get("/nearby-hospitals", async (req, res) => {
         res.json(hospitals);
 
     } catch (error) {
-        console.error("Geoapify Error:", error.response?.data || error.message);
+        console.error("❌ Geoapify Error:", error.response?.data || error.message);
         res.status(500).json({ error: "Failed to fetch hospitals." });
     }
 });
 
 /* ==============================
-   Default Route
+   Fallback Route (Frontend)
 ================================ */
 app.get("*", (req, res) => {
     res.sendFile(path.join(clientPath, "index.html"));
