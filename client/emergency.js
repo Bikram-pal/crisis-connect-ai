@@ -9,10 +9,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const sosBtn = document.getElementById("sosBtn");
 
-    /* ===========================
-       AI EMERGENCY ANALYSIS
-    =========================== */
-
     if (detectBtn) {
         detectBtn.addEventListener("click", async () => {
 
@@ -53,6 +49,12 @@ document.addEventListener("DOMContentLoaded", () => {
             detectBtn.disabled = false;
         });
     }
+
+    /* ===========================
+       LOAD NEARBY HOSPITALS
+    =========================== */
+
+    loadNearbyHospitals();
 
     /* ===========================
        SOS REDIRECT
@@ -135,6 +137,8 @@ async function loadNearbyHospitals() {
 
         const response = await fetch(`/nearby-hospitals?lat=${lat}&lon=${lon}`);
         const hospitals = await response.json();
+
+        console.log("Nearby hospitals:", hospitals);
 
         hospitals.slice(0, 3).forEach((hospital, index) => {
 
