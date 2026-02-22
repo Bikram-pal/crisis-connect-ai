@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
 
     const detectBtn = document.getElementById("detectBtn");
-    const inputBox = document.querySelector("textarea");
+    const inputBox = document.getElementById("emergencyInput");
 
     const severitySection = document.getElementById("severitySection");
     const severityLevel = document.getElementById("severityLevel");
@@ -41,6 +41,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 severitySection.classList.remove("hidden");
 
+                /* 🔥 LOAD HOSPITALS ONLY AFTER AI */
+                await loadNearbyHospitals();
+
             } catch (error) {
                 console.error("AI error:", error);
                 alert("AI analysis failed.");
@@ -52,12 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* ===========================
-       LOAD NEARBY HOSPITALS
-    =========================== */
-
-    loadNearbyHospitals();
-
-    /* ===========================
        SOS REDIRECT
     =========================== */
 
@@ -65,6 +62,47 @@ document.addEventListener("DOMContentLoaded", () => {
         sosBtn.addEventListener("click", () => {
             window.location.href = "sos.html";
         });
+    }
+
+    /* ===========================
+       VOICE TO TEXT
+    =========================== */
+
+    const micBtn = document.getElementById("micBtn");
+
+    if (micBtn && inputBox) {
+
+        const SpeechRecognition =
+            window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (SpeechRecognition) {
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = "en-US";
+            recognition.interimResults = false;
+
+            micBtn.addEventListener("click", () => {
+                recognition.start();
+                micBtn.innerText = "Listening...";
+            });
+
+            recognition.onresult = function (event) {
+                inputBox.value = event.results[0][0].transcript;
+            };
+
+            recognition.onend = function () {
+                micBtn.innerText = "🎤";
+            };
+
+            recognition.onerror = function () {
+                micBtn.innerText = "🎤";
+                alert("Voice recognition failed.");
+            };
+
+        } else {
+            micBtn.style.display = "none";
+            console.log("Speech recognition not supported.");
+        }
     }
 
 });
@@ -97,8 +135,6 @@ async function loadNearbyHospitals() {
 
         const response = await fetch(`/nearby-hospitals?lat=${lat}&lon=${lon}`);
         const hospitals = await response.json();
-
-        console.log("Nearby hospitals:", hospitals);
 
         hospitals.slice(0, 3).forEach((hospital, index) => {
 
