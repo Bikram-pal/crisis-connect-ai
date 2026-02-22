@@ -1,88 +1,119 @@
 <!DOCTYPE html>
-
-<html lang="en"><head>
+<html lang="en">
+<head>
 <meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#e53734",
-                        "background-light": "#f8f6f6",
-                        "background-dark": "#211111",
-                    },
-                    fontFamily: {
-                        "display": ["Inter", "sans-serif"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.5rem",
-                        "lg": "1rem",
-                        "xl": "1.5rem",
-                        "full": "9999px"
-                    },
-                },
-            },
-        }
-    </script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+
 <title>CrisisConnectAI - Live Emergency Tracking</title>
 </head>
-<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased overflow-hidden">
+
+<body class="bg-background-light font-display text-slate-900 antialiased overflow-hidden">
+
 <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
 <div class="layout-container flex h-full grow flex-col">
-<!-- Navigation Header -->
+
 <header class="flex items-center justify-center bg-red-600 px-6 py-6 text-white shadow-xl">
 <h1 class="text-2xl font-black tracking-tighter uppercase flex items-center gap-3">
 <span class="animate-pulse">🚨</span> EMERGENCY SOS ACTIVATED
-  </h1>
+</h1>
 </header>
-<main class="flex-1 px-4 py-8 lg:px-20 lg:py-10"><div class="mx-auto max-w-2xl flex flex-col items-center justify-center min-h-[70vh] text-center px-4">
-<!-- Pulse Icon -->
+
+<main class="flex-1 px-4 py-8 lg:px-20 lg:py-10">
+<div class="mx-auto max-w-2xl flex flex-col items-center justify-center min-h-[70vh] text-center px-4">
+
 <div class="relative mb-8">
 <div class="absolute inset-0 rounded-full bg-red-500/20 animate-ping scale-150"></div>
 <div class="relative flex h-24 w-24 items-center justify-center rounded-full bg-red-600 text-white shadow-2xl">
 <span class="material-symbols-outlined text-5xl">emergency_share</span>
 </div>
 </div>
-<!-- Confirmation Text -->
+
 <div class="space-y-4 mb-10">
-<h2 class="text-4xl font-black text-red-600 dark:text-red-500 uppercase tracking-tight">Alert Sent Successfully</h2>
-<p class="text-xl font-bold text-slate-900 dark:text-white">Your Live Location Has Been Shared</p>
-<div class="space-y-1">
-<p class="text-slate-600 dark:text-slate-400 font-medium italic">Emergency services have been notified</p>
-<p class="text-slate-600 dark:text-slate-400 font-medium italic">Help is on the way</p>
+<h2 class="text-4xl font-black text-red-600 uppercase tracking-tight">
+Alert Sent Successfully
+</h2>
+<p class="text-xl font-bold">Your Live Location Has Been Shared</p>
+<p class="text-slate-600 font-medium italic">Emergency services have been notified</p>
+<p class="text-slate-600 font-medium italic">Help is on the way</p>
 </div>
+
+<!-- LIVE COORDINATES -->
+<div class="bg-slate-100 px-6 py-3 rounded-full border mb-12">
+<code id="liveCoords"
+class="text-sm font-bold uppercase tracking-widest">
+Fetching your live location...
+</code>
 </div>
-<!-- Coordinates -->
-<div class="bg-slate-100 dark:bg-slate-800/50 px-6 py-3 rounded-full border border-slate-200 dark:border-slate-700 mb-12">
-<code class="text-sm font-bold text-slate-700 dark:text-slate-300 uppercase tracking-widest">
-      Latitude: 40.7128° N | Longitude: 74.0060° W
-    </code>
-</div>
-<!-- Action Buttons -->
+
+<!-- ACTION BUTTONS -->
 <div class="w-full max-w-md space-y-4">
-<button class="w-full flex items-center justify-center gap-4 py-6 bg-green-600 hover:bg-green-700 text-white text-2xl font-black rounded-2xl shadow-xl transition-all transform hover:scale-[1.02] active:scale-95">
+
+<button id="callBtn"
+class="w-full flex items-center justify-center gap-4 py-6 bg-green-600 hover:bg-green-700 text-white text-2xl font-black rounded-2xl shadow-xl transition-all transform hover:scale-[1.02] active:scale-95">
 <span class="material-symbols-outlined text-3xl">call</span>
-      Call Emergency (112)
-    </button>
-<button class="w-full py-4 text-slate-500 dark:text-slate-400 font-bold hover:text-red-600 transition-colors uppercase tracking-widest text-sm">
-      Cancel SOS
-    </button>
+Call Emergency (112)
+</button>
+
+<button id="cancelBtn"
+class="w-full py-4 text-slate-500 font-bold hover:text-red-600 transition-colors uppercase tracking-widest text-sm">
+Cancel SOS
+</button>
+
 </div>
-</div></main>
-<!-- Footer Small -->
-<footer class="mt-auto px-6 py-4 lg:px-20 flex justify-between items-center text-[11px] text-slate-400 uppercase tracking-widest border-t border-slate-200 dark:border-slate-800">
+</div>
+</main>
+
+<footer class="mt-auto px-6 py-4 flex justify-between items-center text-[11px] text-slate-400 uppercase tracking-widest border-t">
 <span>CrisisConnectAI System v2.4.0</span>
 <span class="flex items-center gap-1">
 <span class="h-1.5 w-1.5 rounded-full bg-green-500"></span>
-                    Systems Nominal
-                </span>
+Systems Nominal
+</span>
 </footer>
+
 </div>
 </div>
-</body></html>
+
+<!-- SCRIPT -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const coordsEl = document.getElementById("liveCoords");
+    const cancelBtn = document.getElementById("cancelBtn");
+    const callBtn = document.getElementById("callBtn");
+
+    // GET LIVE LOCATION
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+
+            const lat = position.coords.latitude.toFixed(6);
+            const lon = position.coords.longitude.toFixed(6);
+
+            coordsEl.textContent =
+                `Latitude: ${lat}° | Longitude: ${lon}°`;
+
+        }, () => {
+            coordsEl.textContent = "Location access denied.";
+        });
+    } else {
+        coordsEl.textContent = "Geolocation not supported.";
+    }
+
+    // CANCEL → BACK TO EMERGENCY PAGE
+    cancelBtn.addEventListener("click", () => {
+        window.location.href = "emergency.html";
+    });
+
+    // CALL 112
+    callBtn.addEventListener("click", () => {
+        window.location.href = "tel:112";
+    });
+
+});
+</script>
+
+</body>
+</html>
