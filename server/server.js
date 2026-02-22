@@ -11,17 +11,6 @@ app.use(cors());
 app.use(express.json());
 
 /* ==============================
-   Environment Variable Check
-================================ */
-if (!process.env.OPENROUTER_API_KEY) {
-    console.warn("⚠ OPENROUTER_API_KEY not set");
-}
-
-if (!process.env.GEOAPIFY_API_KEY) {
-    console.warn("⚠ GEOAPIFY_API_KEY not set");
-}
-
-/* ==============================
    Serve Frontend
 ================================ */
 const clientPath = path.join(__dirname, "..", "client");
@@ -97,7 +86,7 @@ No extra text.
         res.json(parsedResponse);
 
     } catch (error) {
-        console.error("❌ OpenRouter Error:", error.response?.data || error.message);
+        console.error("OpenRouter Error:", error.response?.data || error.message);
         res.status(500).json({ error: "AI analysis failed." });
     }
 });
@@ -136,20 +125,20 @@ app.get("/nearby-hospitals", async (req, res) => {
         res.json(hospitals);
 
     } catch (error) {
-        console.error("❌ Geoapify Error:", error.response?.data || error.message);
+        console.error("Geoapify Error:", error.response?.data || error.message);
         res.status(500).json({ error: "Failed to fetch hospitals." });
     }
 });
 
 /* ==============================
-   Fallback Route (Frontend)
+   Fallback Route (Frontend Safe)
 ================================ */
-app.get("*", (req, res) => {
+app.use((req, res) => {
     res.sendFile(path.join(clientPath, "index.html"));
 });
 
 /* ==============================
-   START SERVER (RENDER SAFE)
+   START SERVER (Render Safe)
 ================================ */
 const PORT = process.env.PORT || 5000;
 
