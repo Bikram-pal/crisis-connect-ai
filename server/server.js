@@ -1,4 +1,4 @@
-require("dotenv").config({ path: __dirname + "/.env" });
+require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
@@ -30,22 +30,22 @@ app.post("/analyze", async (req, res) => {
         const response = await axios.post(
             "https://openrouter.ai/api/v1/chat/completions",
             {
-                model: "openai/gpt-4o-mini", // Stable + recommended
+                model: "openai/gpt-4o-mini",
                 messages: [
                     {
                         role: "system",
                         content: `
 You are an emergency medical AI.
 
-Analyze the user message and respond ONLY in valid JSON format like this:
+Respond ONLY in valid JSON format:
 
 {
   "severity": "LOW | MEDIUM | CRITICAL",
-  "explanation": "short medical reasoning",
-  "recommended_action": "what the user should do immediately"
+  "explanation": "short reasoning",
+  "recommended_action": "immediate action"
 }
 
-Do not add extra text. Only JSON.
+No extra text.
                         `
                     },
                     {
@@ -72,7 +72,7 @@ Do not add extra text. Only JSON.
             parsedResponse = {
                 severity: "UNKNOWN",
                 explanation: aiText,
-                recommended_action: "Seek medical advice."
+                recommended_action: "Seek medical advice immediately."
             };
         }
 
@@ -100,7 +100,7 @@ app.get("/nearby-hospitals", async (req, res) => {
             {
                 params: {
                     categories: "healthcare.hospital",
-                    filter: `circle:${lon},${lat},5000`, // 5km radius
+                    filter: `circle:${lon},${lat},5000`,
                     limit: 5,
                     apiKey: process.env.GEOAPIFY_API_KEY
                 }
@@ -124,10 +124,17 @@ app.get("/nearby-hospitals", async (req, res) => {
 });
 
 /* ==============================
-   START SERVER
+   Default Route
 ================================ */
-const PORT = 5000;
+app.get("*", (req, res) => {
+    res.sendFile(path.join(clientPath, "index.html"));
+});
+
+/* ==============================
+   START SERVER (RENDER SAFE)
+================================ */
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-    console.log("🚀 Server running at http://localhost:" + PORT);
+    console.log(`🚀 Server running on port ${PORT}`);
 });
