@@ -9,6 +9,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const sosBtn = document.getElementById("sosBtn");
 
+    /* ===========================
+       AI EMERGENCY ANALYSIS
+    =========================== */
+
     if (detectBtn) {
         detectBtn.addEventListener("click", async () => {
 
@@ -37,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 severitySection.classList.remove("hidden");
 
-                /* 🔥 LOAD HOSPITALS ONLY AFTER AI */
+                // 🔥 Load hospitals only after AI result
                 await loadNearbyHospitals();
 
             } catch (error) {
@@ -51,12 +55,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* ===========================
-       LOAD NEARBY HOSPITALS
-    =========================== */
-
-    loadNearbyHospitals();
-
-    /* ===========================
        SOS REDIRECT
     =========================== */
 
@@ -66,49 +64,8 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    /* ===========================
-       VOICE TO TEXT
-    =========================== */
-
-    const micBtn = document.getElementById("micBtn");
-
-    if (micBtn && inputBox) {
-
-        const SpeechRecognition =
-            window.SpeechRecognition || window.webkitSpeechRecognition;
-
-        if (SpeechRecognition) {
-
-            const recognition = new SpeechRecognition();
-            recognition.lang = "en-US";
-            recognition.interimResults = false;
-
-            micBtn.addEventListener("click", () => {
-                recognition.start();
-                micBtn.innerText = "Listening...";
-            });
-
-            recognition.onresult = function (event) {
-                inputBox.value = event.results[0][0].transcript;
-            };
-
-            recognition.onend = function () {
-                micBtn.innerText = "🎤";
-            };
-
-            recognition.onerror = function () {
-                micBtn.innerText = "🎤";
-                alert("Voice recognition failed.");
-            };
-
-        } else {
-            micBtn.style.display = "none";
-            console.log("Speech recognition not supported.");
-        }
-    }
-
 });
-
+    
 
 /* ===========================
    HOSPITAL LOADER
@@ -118,27 +75,46 @@ async function loadNearbyHospitals() {
 
     try {
 
-        let lat = 20.2961;
-        let lon = 85.8245;
-
-        if (navigator.geolocation) {
-            try {
-                const position = await new Promise((resolve, reject) => {
-                    navigator.geolocation.getCurrentPosition(resolve, reject);
-                });
-
-                lat = position.coords.latitude;
-                lon = position.coords.longitude;
-
-            } catch {
-                console.log("Location denied. Using default.");
-            }
+        if (!navigator.geolocation) {
+            alert("Geolocation is not supported by your browser.");
+            return;
         }
 
+        // 🔥 FORCE REAL-TIME LOCATION (NO CACHE)
+        const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(
+                resolve,
+                reject,
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        });
+
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+
+        console.log("User Latitude:", lat);
+        console.log("User Longitude:", lon);
+
+        // 🔥 Fetch hospitals from backend
         const response = await fetch(`/nearby-hospitals?lat=${lat}&lon=${lon}`);
         const hospitals = await response.json();
 
-        console.log("Nearby hospitals:", hospitals);
+        if (!hospitals || hospitals.length === 0) {
+            alert("No nearby hospitals found.");
+            return;
+        }
+
+        // 🔥 Clear previous values first
+        for (let i = 1; i <= 3; i++) {
+            const nameEl = document.getElementById(`hospitalName${i}`);
+            const distEl = document.getElementById(`hospitalDistance${i}`);
+            if (nameEl) nameEl.textContent = "Loading...";
+            if (distEl) distEl.textContent = "";
+        }
 
         hospitals.slice(0, 3).forEach((hospital, index) => {
 
@@ -146,9 +122,11 @@ async function loadNearbyHospitals() {
             const distEl = document.getElementById(`hospitalDistance${index + 1}`);
             const navBtn = document.getElementById(`navigateBtn${index + 1}`);
 
-            if (nameEl) nameEl.textContent = hospital.name;
+            if (nameEl) {
+                nameEl.textContent = hospital.name || "Unnamed Hospital";
+            }
 
-            if (distEl && hospital.distance) {
+            if (distEl && typeof hospital.distance === "number") {
                 const km = (hospital.distance / 1000).toFixed(2);
                 distEl.textContent = `${km} km away`;
             }
@@ -157,33 +135,24 @@ async function loadNearbyHospitals() {
 
                 navBtn.onclick = () => {
 
-                    if (!navigator.geolocation) {
-                        alert("Geolocation not supported.");
-                        return;
-                    }
+                    const mapURL =
+                        `https://www.google.com/maps/dir/?api=1` +
+                        `&origin=${lat},${lon}` +
+                        `&destination=${hospital.lat},${hospital.lon}`;
 
-                    navigator.geolocation.getCurrentPosition((position) => {
-
-                        const userLat = position.coords.latitude;
-                        const userLon = position.coords.longitude;
-
-                        const mapURL =
-                            `https://www.google.com/maps/dir/?api=1` +
-                            `&origin=${userLat},${userLon}` +
-                            `&destination=${hospital.lat},${hospital.lon}`;
-
-                        window.open(mapURL, "_blank");
-
-                    }, () => {
-                        alert("Location permission denied.");
-                    });
-
+                    window.open(mapURL, "_blank");
                 };
             }
 
         });
 
     } catch (error) {
+
         console.error("Hospital load error:", error);
+
+        alert(
+            "Location access is required to fetch nearby hospitals.\n\n" +
+            "Please allow location permission and refresh the page."
+        );
     }
 }
