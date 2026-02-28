@@ -11,6 +11,29 @@ app.use(cors());
 app.use(express.json());
 
 /* ==============================
+   Distance Helper (Haversine)
+================================ */
+function toRadians(degrees) {
+    return (degrees * Math.PI) / 180;
+}
+
+function getDistanceMeters(lat1, lon1, lat2, lon2) {
+    const earthRadiusMeters = 6371000;
+    const dLat = toRadians(lat2 - lat1);
+    const dLon = toRadians(lon2 - lon1);
+
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRadians(lat1)) *
+            Math.cos(toRadians(lat2)) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return earthRadiusMeters * c;
+}
+
+/* ==============================
    Serve Frontend
 ================================ */
 const clientPath = path.join(__dirname, "..", "client");
@@ -26,7 +49,7 @@ app.get("/health", (req, res) => {
 /* ==============================
    AI EMERGENCY ANALYSIS
 ================================ */
-app.post("/analyze", async (req, res) => {
+const analyzeHandler = async (req, res) => {
     try {
         const { message } = req.body;
 
@@ -89,38 +112,62 @@ No extra text.
         console.error("OpenRouter Error:", error.response?.data || error.message);
         res.status(500).json({ error: "AI analysis failed." });
     }
-});
+};
+
+app.post("/analyze", analyzeHandler);
+app.post("/api/analyze", analyzeHandler);
 
 /* ==============================
    GEOAPIFY NEARBY HOSPITALS
 ================================ */
 app.get("/nearby-hospitals", async (req, res) => {
     try {
-        const { lat, lon } = req.query;
+        const userLat = Number.parseFloat(req.query.lat);
+        const userLon = Number.parseFloat(req.query.lon);
 
-        if (!lat || !lon) {
+        if (!Number.isFinite(userLat) || !Number.isFinite(userLon)) {
             return res.status(400).json({ error: "Missing coordinates." });
         }
+
+        console.log("User:", userLat, userLon);
 
         const geoResponse = await axios.get(
             "https://api.geoapify.com/v2/places",
             {
                 params: {
                     categories: "healthcare.hospital",
-                    filter: `circle:${lon},${lat},5000`,
+                    filter: `circle:${userLon},${userLat},5000`,
                     limit: 5,
                     apiKey: process.env.GEOAPIFY_API_KEY
                 }
             }
         );
 
-        const hospitals = geoResponse.data.features.map(place => ({
-            name: place.properties.name || "Unnamed Hospital",
-            address: place.properties.formatted || "Address unavailable",
-            distance: place.properties.distance || 0,
-            lat: place.properties.lat,
-            lon: place.properties.lon
-        }));
+        const hospitals = geoResponse.data.features.map(place => {
+            const hospitalLat = Number.parseFloat(place.properties.lat);
+            const hospitalLon = Number.parseFloat(place.properties.lon);
+            const distance =
+                Number.isFinite(hospitalLat) && Number.isFinite(hospitalLon)
+                    ? getDistanceMeters(userLat, userLon, hospitalLat, hospitalLon)
+                    : null;
+
+            console.log("Hospital:", hospitalLat, hospitalLon);
+            console.log("Distance:", distance);
+
+            return {
+                name: place.properties.name || "Unnamed Hospital",
+                address: place.properties.formatted || "Address unavailable",
+                distance,
+                lat: hospitalLat,
+                lon: hospitalLon
+            };
+        });
+
+        hospitals.sort((a, b) => {
+            if (a.distance === null) return 1;
+            if (b.distance === null) return -1;
+            return a.distance - b.distance;
+        });
 
         res.json(hospitals);
 

@@ -155,6 +155,8 @@ async function loadNearbyHospitals() {
                 nameEl.textContent = hospital.name || "Unnamed Hospital";
             }
 
+            console.log("hospital.distance:", hospital.distance);
+
             if (distEl && typeof hospital.distance === "number") {
                 const km = (hospital.distance / 1000).toFixed(2);
                 distEl.textContent = `${km} km away`;
