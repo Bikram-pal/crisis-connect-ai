@@ -11,8 +11,7 @@ An AI-powered emergency response web application that:
 
 ## 🌍 Live Demo
 
-Frontend: https://your-frontend-url.vercel.app  
-Backend: https://your-backend-url.onrender.com  
+https://crisis-connect-ai.vercel.app/
 
 ---
 
